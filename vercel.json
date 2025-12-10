@@ -13,11 +13,15 @@
     },
     {
       "src": "/",
-      "dest": "public/index.html" 
+      "dest": "public/index.html"
+    },
+    {
+      "src": "/(.*?\\.(js|css|html|png|jpg|jpeg))",
+      "dest": "public/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "public/$1"
+      "dest": "server/server.js"
     }
   ]
 }
