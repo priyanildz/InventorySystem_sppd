@@ -7,39 +7,12 @@ const BASE_URL = ''; // Use an empty string for relative paths (e.g., /api/produ
 // ------------------------------------------------------------------
 // HELPER: FETCH AND RENDER ALL DATA
 // ------------------------------------------------------------------
-// async function fetchAndRenderAllData() {
-//     try {
-//         const productsResponse = await fetch(`${BASE_URL}/api/products`);
-//         products = await productsResponse.json(); 
-
-//         const ordersResponse = await fetch(`${BASE_URL}/api/orders`);
-//         orders = await ordersResponse.json(); 
-
-//         renderProducts();
-//         renderOrders();
-        
-//     } catch (error) {
-//         console.error("Failed to fetch initial data:", error);
-//         // alert("Could not connect to the server/database. Check the server console.");
-//     }
-// }
-
-
-// script.js: Update fetchAndRenderAllData
 async function fetchAndRenderAllData() {
     try {
-        // --- PRODUCTS FETCH ---
         const productsResponse = await fetch(`${BASE_URL}/api/products`);
-        if (!productsResponse.ok) { // <-- ADD THIS CHECK
-            throw new Error(`HTTP error! status: ${productsResponse.status} for products`);
-        }
         products = await productsResponse.json(); 
 
-        // --- ORDERS FETCH ---
         const ordersResponse = await fetch(`${BASE_URL}/api/orders`);
-        if (!ordersResponse.ok) { // <-- ADD THIS CHECK
-            throw new Error(`HTTP error! status: ${ordersResponse.status} for orders`);
-        }
         orders = await ordersResponse.json(); 
 
         renderProducts();
@@ -47,10 +20,10 @@ async function fetchAndRenderAllData() {
         
     } catch (error) {
         console.error("Failed to fetch initial data:", error);
-        // Display a more specific error message to the user
-        alert(`Could not load data. Check the server console for the 500 error. Details: ${error.message}`);
+        // alert("Could not connect to the server/database. Check the server console.");
     }
 }
+
 
 // ------------------------------------------------------------------
 // HELPER: RENDER TABLES (UPDATED TO USE p._id)
