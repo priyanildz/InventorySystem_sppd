@@ -12,12 +12,12 @@
       "dest": "server/server.js"
     },
     {
-      "src": "/(.*)",
+      "src": "/",
       "dest": "public/index.html" 
     },
     {
-      "src": "/public/(.*)",
-      "dest": "public/$1" 
+      "src": "/(.*)",
+      "dest": "public/$1"
     }
   ]
 }
