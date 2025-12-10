@@ -124,10 +124,10 @@ app.post('/api/orders', async (req, res) => {
 // This tells the server to look in the 'public' folder for static files (index.html, script.js)
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Any request that isn't an API route will be redirected to index.html
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
+// // Any request that isn't an API route will be redirected to index.html
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+// });
 
 
 const PORT = process.env.PORT || 3000;
