@@ -4,7 +4,7 @@
   "description": "Full-stack inventory system with Express and MongoDB.",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js"  // Existing start script
+    "start": "node server/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
