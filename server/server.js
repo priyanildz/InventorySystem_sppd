@@ -244,7 +244,7 @@
 
 
 
-
+// server.js
 // Load environment variables (like your database URL) from .env file
 require('dotenv').config();
 
@@ -385,11 +385,10 @@ app.delete('/api/products/:id', async (req, res) => {
 // GET all Orders
 app.get('/api/orders', async (req, res) => {
     try {
-        // **FIX**: Changed sort value from { date: '-1' } to { date: -1 }
+        // FIXED: Sort by date descending
         const orders = await Order.find().sort({ date: -1 }); 
         res.status(200).json(orders);
     } catch (err) {
-        // Logging is kept for future debugging
         console.error("SERVER ERROR: Failed to fetch orders route:", err);
         res.status(500).json({ message: 'Error fetching orders', error: err.message || err });
     }
@@ -422,7 +421,7 @@ app.post('/api/orders', async (req, res) => {
         await newOrder.save();
 
         // 2. Update product quantity
-        await Product.updateOne({ name: product }, { qty: newQuantity });
+        const finalProduct = await Product.updateOne({ name: product }, { qty: newQuantity });
 
         res.status(201).json({ order: newOrder, newProductQty: newQuantity });
 
@@ -430,6 +429,60 @@ app.post('/api/orders', async (req, res) => {
         res.status(400).json({ message: 'Error adding order.', error: err });
     }
 });
+
+// **NEW ROUTE**: PATCH (Update) an Order (Includes Stock Reversion & Re-application)
+app.patch('/api/orders/:id', async (req, res) => {
+    const { id } = req.params;
+    const { newQty, newDate } = req.body;
+
+    try {
+        const oldOrder = await Order.findById(id);
+        if (!oldOrder) {
+            return res.status(404).json({ message: 'Order not found.' });
+        }
+        
+        // Product is the name of the product associated with the order
+        const product = await Product.findOne({ name: oldOrder.product }); 
+        if (!product) {
+            return res.status(404).json({ message: 'Product related to order not found.' });
+        }
+        
+        let currentStock = product.qty;
+        
+        // --- 1. REVERSE OLD STOCK CHANGE ---
+        // If old order was 'received', subtract old qty; if 'sent' or 'defective', add old qty.
+        const modifier = (oldOrder.type === 'received') ? -1 : 1;
+        currentStock += modifier * oldOrder.qty; 
+        
+        // --- 2. APPLY NEW STOCK CHANGE ---
+        // If old order type was 'received', add new qty; if 'sent' or 'defective', subtract new qty.
+        const newModifier = (oldOrder.type === 'received') ? 1 : -1;
+        let newStock = currentStock + newModifier * newQty;
+        
+        if (newStock < 0) {
+            return res.status(400).json({ message: `Cannot update order: Stock for ${product.name} would become negative (${newStock}).` });
+        }
+        
+        // --- 3. UPDATE DATABASE ---
+
+        // Update the Product stock
+        await Product.updateOne({ name: product.name }, { qty: newStock });
+
+        // Update the Order document itself
+        const updatedOrder = await Order.findByIdAndUpdate(
+            id, 
+            { qty: newQty, date: newDate }, 
+            { new: true, runValidators: true }
+        );
+
+        res.status(200).json({ message: 'Order updated successfully', newProductQty: newStock, order: updatedOrder });
+
+    } catch (err) {
+        console.error("SERVER ERROR: Failed to patch orders route:", err);
+        res.status(500).json({ message: 'Error updating order.', error: err.message || err });
+    }
+});
+
 
 // DELETE an Order (Includes Stock Reversion)
 app.delete('/api/orders/:id', async (req, res) => {

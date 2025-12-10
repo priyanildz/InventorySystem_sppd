@@ -284,7 +284,7 @@
 
 
 
-
+// script.js
 // The data is now held in these local arrays *after* being fetched from the server.
 let products = [];
 let orders = []; 
@@ -339,7 +339,6 @@ function renderOrders() {
     const tbody = document.querySelector("#orderTable tbody");
     tbody.innerHTML = "";
 
-    // ERROR CHECK: This is where the client-side error happens if orders is not an array.
     if (!Array.isArray(orders)) {
         console.error("Orders data is not an array:", orders);
         tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Error loading orders: Server returned invalid data. Check server console.</td></tr>`;
@@ -354,7 +353,7 @@ function renderOrders() {
             <td>${o.qty}</td>
             <td>${o.date}</td>
             <td>
-                <button class="edit" onclick="editOrder('${o._id}', ${o.qty}, '${o.date}')">Edit</button>
+                <button class="edit" onclick="editOrder('${o._id}', '${o.product}', '${o.type}', ${o.qty}, '${o.date}')">Edit</button>
                 <button class="delete" onclick="deleteOrder('${o._id}')">Delete</button>
             </td>
         </tr>`;
@@ -509,8 +508,47 @@ async function addOrder() {
     }
 }
 
-function editOrder(id, currentQty, currentDate) {
-     alert("Edit Order is disabled. To implement this, we need a complex backend PATCH route that handles reverting the old stock and applying the new stock.");
+// **UPDATED** to implement editing functionality
+async function editOrder(id, currentProduct, currentType, currentQty, currentDate) {
+    const newQtyStr = prompt(`Enter new quantity for ${currentProduct} (${currentType}):`, currentQty); 
+    const newDate = prompt("Enter new date (yyyy-mm-dd):", currentDate); 
+
+    if (newQtyStr === null || newDate === null || newDate.trim() === "") return;
+
+    const newQty = Number(newQtyStr);
+
+    if (isNaN(newQty) || newQty <= 0) {
+        alert("Invalid quantity entered.");
+        return;
+    }
+
+    // Note: We don't allow changing product or type from the client to keep the server logic simple.
+    // If you need that, you would have to add more sophisticated logic on the server.
+    if (!confirm(`Confirm edit: change Quantity from ${currentQty} to ${newQty} and Date to ${newDate}?`)) return;
+
+    try {
+        const response = await fetch(`${BASE_URL}/api/orders/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                newQty: newQty, 
+                newDate: newDate 
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(`Failed to update order: ${data.message}`);
+            return;
+        }
+
+        await fetchAndRenderAllData();
+        alert(`Order updated successfully! New stock for ${currentProduct} is ${data.newProductQty}.`);
+    } catch (error) {
+        console.error("Error editing order:", error);
+        alert("An error occurred while communicating with the server.");
+    }
 }
 
 async function deleteOrder(id) {
@@ -555,7 +593,6 @@ function exportProducts() {
 
 function exportOrders() {
     let rows = [["Product", "Type", "Quantity", "Date"]];
-    // Check if 'orders' is an array before using forEach for safety
     if (Array.isArray(orders)) {
         orders.forEach(o => rows.push([o.product, o.type, o.qty, o.date]));
     }
