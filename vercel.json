@@ -13,7 +13,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "server/server.js"
+      "dest": "public/$1"
     }
   ]
 }

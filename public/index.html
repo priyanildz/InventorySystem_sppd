@@ -4,72 +4,138 @@
 <meta charset="UTF-8">
 <title>Inventory System</title>
 <style>
-body { font-family: Arial; margin: 20px; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-td, th { border: 1px solid #ccc; padding: 8px; text-align: left; }
-input, select, button { padding: 6px; margin: 4px; }
-.section { border: 2px solid #333; padding: 15px; margin-bottom: 25px; border-radius: 8px; }
-h2 { margin-top: 0; }
-.action-btn { cursor: pointer; padding: 4px 10px; }
-.delete { background: red; color: white; }
-.edit { background: green; color: white; }
-.export { background: #555; color: white; }
+/* --- GENERAL STYLING --- */
+body { 
+    font-family: Arial, sans-serif; 
+    margin: 20px; 
+    background-color: #f4f4f9;
+}
+h1 {
+    color: #333;
+    border-bottom: 2px solid #5cb85c; /* Accent color */
+    padding-bottom: 10px;
+}
+.section { 
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    padding: 20px; 
+    margin-bottom: 30px; 
+    border-radius: 8px; 
+    background-color: #fff;
+}
+h2 { 
+    margin-top: 0; 
+    color: #5cb85c;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* --- INPUTS AND BUTTONS (FLEXBOX FOR ALIGNMENT) --- */
+.input-group {
+    display: flex;
+    gap: 10px; /* Space between input elements */
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
+    margin-bottom: 15px;
+    align-items: center; /* Vertically center inputs and buttons */
+}
+input, select { 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px;
+    flex-grow: 1; /* Allows inputs/selects to take up available space */
+    min-width: 150px;
+}
+button { 
+    padding: 10px 15px; 
+    margin: 0; /* Remove margin from global style */
+    border: none;
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+/* --- BUTTON STYLING --- */
+.add { background: #5cb85c; color: white; }
+.add:hover { background: #4cae4c; }
+.delete { background: #d9534f; color: white; }
+.delete:hover { background: #c9302c; }
+.edit { background: #0275d8; color: white; }
+.edit:hover { background: #025aa5; }
+.export { background: #5bc0de; color: white; }
+.export:hover { background: #31b0d5; }
+
+/* --- TABLE STYLING --- */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 15px; 
+}
+td, th { 
+    border: 1px solid #eee; 
+    padding: 12px; 
+    text-align: left; 
+}
+thead tr {
+    background-color: #f9f9f9;
+    color: #333;
+    font-weight: bold;
+}
 </style>
 </head>
 <body>
 
 <h1>Inventory Management System</h1>
 
-<!-- ------------------------------------------------------------------ -->
-<!-- PRODUCTS SECTION -->
-<!-- ------------------------------------------------------------------ -->
 <div class="section">
-<h2>Products</h2>
+    <h2>Products</h2>
 
-<input id="pname" placeholder="Product Name">
-<input id="pqty" type="number" placeholder="Quantity">
+    <div class="input-group">
+        <input id="pname" placeholder="Product Name">
+        <input id="pqty" type="number" placeholder="Initial Quantity">
+        
+        <button class="add" onclick="addProduct()">Add Product</button>
+        <button class="export" onclick="exportProducts()">Export Products</button>
+    </div>
 
-<button onclick="addProduct()">Add Product</button>
-<button class="export" onclick="exportProducts()">Export Products</button>
-
-<table id="prodTable">
-<thead>
-<tr><th>Name</th><th>Stock</th><th>Actions</th></tr>
-</thead>
-<tbody></tbody>
-</table>
+    <table id="prodTable">
+    <thead>
+    <tr><th>Name</th><th>Stock</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+    </table>
 </div>
 
-<!-- ------------------------------------------------------------------ -->
-<!-- ORDERS SECTION -->
-<!-- ------------------------------------------------------------------ -->
 <div class="section">
-<h2>Orders</h2>
+    <h2>Orders</h2>
 
-<select id="oproduct"></select>
-<select id="otype">
-<option value="received">Received</option>
-<option value="sent">Sent</option>
-<option value="defective">Defective</option>
-</select>
-<input id="oqty" type="number" placeholder="Quantity">
-<input id="odate" type="date">
+    <div class="input-group">
+        <select id="oproduct"></select>
+        <select id="otype">
+            <option value="received">Received (In)</option>
+            <option value="sent">Sent (Out)</option>
+            <option value="defective">Defective (Loss)</option>
+        </select>
+        <input id="oqty" type="number" placeholder="Quantity">
+        <input id="odate" type="date">
+        
+        <button class="add" onclick="addOrder()">Add Order</button>
+        <button class="export" onclick="exportOrders()">Export Orders</button>
+    </div>
 
-<button onclick="addOrder()">Add Order</button>
-<button class="export" onclick="exportOrders()">Export Orders</button>
-
-<table id="orderTable">
-<thead>
-<tr>
-<th>Product</th>
-<th>Type</th>
-<th>Quantity</th>
-<th>Date</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
+    <table id="orderTable">
+    <thead>
+    <tr>
+        <th>Product</th>
+        <th>Type</th>
+        <th>Quantity</th>
+        <th>Date</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+    </table>
 </div>
 <script src="script.js"></script> 
 </body>
