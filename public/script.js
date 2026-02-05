@@ -489,26 +489,57 @@ async function editProduct(id, currentName, currentQty) {
 }
 
 
-async function deleteProduct(id) {
-    if (!confirm("Delete this product?")) return;
+// async function deleteProduct(id) {
+//     if (!confirm("Delete this product?")) return;
 
+//     try {
+//         const response = await fetch(`${BASE_URL}/api/products/${id}`, {
+//             method: 'DELETE',
+//         });
+
+//         if (!response.ok) {
+//             const data = await response.json();
+//             alert(`Failed to delete product: ${data.message}`);
+//             return;
+//         }
+
+//         await fetchAndRenderAllData();
+//     } catch (error) {
+//         console.error("Error deleting product:", error);
+//         alert("An error occurred while communicating with the server.");
+//     }
+// }
+async function deleteProduct(id) {
     try {
+        // 1. First, check the server if there are orders
+        const checkResponse = await fetch(`${BASE_URL}/api/products/${id}/check-orders`);
+        const checkData = await checkResponse.json();
+
+        if (checkData.hasOrders) {
+            alert(`Wait! This product has ${checkData.count} orders. You must delete all related orders in the Orders section before you can delete this product.`);
+            return; // STOP HERE
+        }
+
+        // 2. If no orders, ask for final confirmation
+        if (!confirm("Are you sure? No orders are linked to this, so it will be deleted permanently.")) return;
+
         const response = await fetch(`${BASE_URL}/api/products/${id}`, {
             method: 'DELETE',
         });
 
         if (!response.ok) {
             const data = await response.json();
-            alert(`Failed to delete product: ${data.message}`);
+            alert(data.message);
             return;
         }
 
         await fetchAndRenderAllData();
     } catch (error) {
         console.error("Error deleting product:", error);
-        alert("An error occurred while communicating with the server.");
+        alert("An error occurred while trying to delete the product.");
     }
 }
+
 
 // ------------------------------------------------------------------
 // ORDERS FUNCTIONS (UPDATED FOR API)
