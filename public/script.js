@@ -315,25 +315,55 @@ async function fetchAndRenderAllData() {
 // ------------------------------------------------------------------
 // HELPER: RENDER TABLES (UPDATED TO USE p._id)
 // ------------------------------------------------------------------
+// function renderProducts() {
+//     const tbody = document.querySelector("#prodTable tbody");
+//     tbody.innerHTML = "";
+
+//     products.forEach((p) => {
+//         // Use p._id (MongoDB's unique ID) for actions
+//         let tr = `<tr>
+//             <td>${p.name}</td>
+//             <td>${p.qty}</td>
+//             <td>
+//                 <button class="edit" onclick="editProduct('${p._id}', '${p.name}', ${p.qty})">Edit</button>
+//                 <button class="delete" onclick="deleteProduct('${p._id}')">Delete</button>
+//             </td>
+//         </tr>`;
+//         tbody.innerHTML += tr;
+//     });
+
+//     refreshProductDropdown();
+// }
+
 function renderProducts() {
     const tbody = document.querySelector("#prodTable tbody");
-    tbody.innerHTML = "";
+    if (!tbody) return; 
 
-    products.forEach((p) => {
-        // Use p._id (MongoDB's unique ID) for actions
-        let tr = `<tr>
-            <td>${p.name}</td>
-            <td>${p.qty}</td>
-            <td>
-                <button class="edit" onclick="editProduct('${p._id}', '${p.name}', ${p.qty})">Edit</button>
-                <button class="delete" onclick="deleteProduct('${p._id}')">Delete</button>
-            </td>
-        </tr>`;
-        tbody.innerHTML += tr;
-    });
+    // Build the table rows as a single string first
+    let rowsHtml = "";
+
+    if (products.length === 0) {
+        rowsHtml = "<tr><td colspan='3' style='text-align:center'>No products found in database.</td></tr>";
+    } else {
+        products.forEach((p) => {
+            rowsHtml += `<tr>
+                <td>${p.name}</td>
+                <td>${p.qty}</td>
+                <td>
+                    <button class="edit" onclick="editProduct('${p._id}', '${p.name}', ${p.qty})">Edit</button>
+                    <button class="delete" onclick="deleteProduct('${p._id}')">Delete</button>
+                </td>
+            </tr>`;
+        });
+    }
+
+    // Update the page only ONCE (this prevents the "Unresponsive" crash)
+    tbody.innerHTML = rowsHtml;
 
     refreshProductDropdown();
 }
+
+
 
 function renderOrders() {
     const tbody = document.querySelector("#orderTable tbody");
