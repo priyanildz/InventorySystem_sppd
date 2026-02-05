@@ -335,32 +335,29 @@ async function fetchAndRenderAllData() {
 //     refreshProductDropdown();
 // }
 
-function renderProducts() {
-    const tbody = document.querySelector("#prodTable tbody");
-    if (!tbody) return; 
+function renderOrders() {
+    const tbody = document.querySelector("#orderTable tbody");
+    if (!tbody) return;
 
-    // Build the table rows as a single string first
+    tbody.innerHTML = "";
+    
+    // We only show the latest 50 orders to keep the page fast
+    const recentOrders = orders.slice(0, 50); 
+
     let rowsHtml = "";
-
-    if (products.length === 0) {
-        rowsHtml = "<tr><td colspan='3' style='text-align:center'>No products found in database.</td></tr>";
-    } else {
-        products.forEach((p) => {
-            rowsHtml += `<tr>
-                <td>${p.name}</td>
-                <td>${p.qty}</td>
-                <td>
-                    <button class="edit" onclick="editProduct('${p._id}', '${p.name}', ${p.qty})">Edit</button>
-                    <button class="delete" onclick="deleteProduct('${p._id}')">Delete</button>
-                </td>
-            </tr>`;
-        });
-    }
-
-    // Update the page only ONCE (this prevents the "Unresponsive" crash)
+    recentOrders.forEach((o) => {
+        rowsHtml += `<tr>
+            <td>${o.product}</td>
+            <td>${o.type}</td>
+            <td>${o.qty}</td>
+            <td>${o.date}</td>
+            <td>
+                <button class="delete" onclick="deleteOrder('${o._id}')">Delete</button>
+            </td>
+        </tr>`;
+    });
+    
     tbody.innerHTML = rowsHtml;
-
-    refreshProductDropdown();
 }
 
 
