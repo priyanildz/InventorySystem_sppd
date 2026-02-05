@@ -335,46 +335,69 @@ async function fetchAndRenderAllData() {
 //     refreshProductDropdown();
 // }
 
+// function renderOrders() {
+//     const tbody = document.querySelector("#orderTable tbody");
+//     tbody.innerHTML = "";
+
+//     if (!Array.isArray(orders)) {
+//         console.error("Orders data is not an array:", orders);
+//         tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Error loading orders: Server returned invalid data. Check server console.</td></tr>`;
+//         return;
+//     }
+
+//     orders.forEach((o) => {
+//         // Use o._id (MongoDB's unique ID) for actions
+//         let tr = `<tr>
+//             <td>${o.product}</td>
+//             <td>${o.type}</td>
+//             <td>${o.qty}</td>
+//             <td>${o.date}</td>
+//             <td>
+//                 <button class="edit" onclick="editOrder('${o._id}', '${o.product}', '${o.type}', ${o.qty}, '${o.date}')">Edit</button>
+//                 <button class="delete" onclick="deleteOrder('${o._id}')">Delete</button>
+//             </td>
+//         </tr>`;
+//         tbody.innerHTML += tr;
+//     });
+// }
+
+
+function renderProducts() {
+    const tbody = document.querySelector("#prodTable tbody");
+    if (!tbody) return;
+
+    // BUILD THE ENTIRE TABLE AS ONE BIG STRING FIRST
+    let rowsHtml = products.map(p => `
+        <tr>
+            <td>${p.name}</td>
+            <td>${p.qty}</td>
+            <td>
+                <button class="edit" onclick="editProduct('${p._id}', '${p.name}', ${p.qty})">Edit</button>
+                <button class="delete" onclick="deleteProduct('${p._id}')">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+
+    // UPDATE THE SCREEN ONLY ONCE
+    tbody.innerHTML = rowsHtml || "<tr><td colspan='3'>No products found.</td></tr>";
+    refreshProductDropdown();
+}
+
 function renderOrders() {
     const tbody = document.querySelector("#orderTable tbody");
     if (!tbody) return;
 
-    tbody.innerHTML = "";
-    
-    // We only show the latest 50 orders to keep the page fast
-    const recentOrders = orders.slice(0, 50); 
-
-    let rowsHtml = "";
-    recentOrders.forEach((o) => {
-        rowsHtml += `<tr>
-            <td>${o.product}</td>
-            <td>${o.type}</td>
-            <td>${o.qty}</td>
-            <td>${o.date}</td>
-            <td>
-                <button class="delete" onclick="deleteOrder('${o._id}')">Delete</button>
-            </td>
-        </tr>`;
-    });
-    
-    tbody.innerHTML = rowsHtml;
-}
-
-
-
-function renderOrders() {
-    const tbody = document.querySelector("#orderTable tbody");
-    tbody.innerHTML = "";
-
     if (!Array.isArray(orders)) {
-        console.error("Orders data is not an array:", orders);
-        tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Error loading orders: Server returned invalid data. Check server console.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Error loading orders.</td></tr>`;
         return;
     }
 
-    orders.forEach((o) => {
-        // Use o._id (MongoDB's unique ID) for actions
-        let tr = `<tr>
+    // ONLY DRAW THE FIRST 100 ORDERS (Pagination)
+    // This stops the browser from choking on 1,400 rows
+    const visibleOrders = orders.slice(0, 100);
+
+    let rowsHtml = visibleOrders.map(o => `
+        <tr>
             <td>${o.product}</td>
             <td>${o.type}</td>
             <td>${o.qty}</td>
@@ -383,9 +406,10 @@ function renderOrders() {
                 <button class="edit" onclick="editOrder('${o._id}', '${o.product}', '${o.type}', ${o.qty}, '${o.date}')">Edit</button>
                 <button class="delete" onclick="deleteOrder('${o._id}')">Delete</button>
             </td>
-        </tr>`;
-        tbody.innerHTML += tr;
-    });
+        </tr>
+    `).join('');
+
+    tbody.innerHTML = rowsHtml || "<tr><td colspan='5'>No orders found.</td></tr>";
 }
 
 

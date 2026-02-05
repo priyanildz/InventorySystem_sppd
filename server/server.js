@@ -362,22 +362,12 @@ const Order = mongoose.model('Order', OrderSchema);
 // --- PRODUCTS ROUTES ---
 
 // GET all Products
-// app.get('/api/products', async (req, res) => {
-//     try {
-//         const products = await Product.find();
-//         res.status(200).json(products);
-//     } catch (err) {
-//         res.status(500).json({ message: 'Error fetching products', error: err });
-//     }
-// });
-
-app.get('/api/orders', async (req, res) => {
+app.get('/api/products', async (req, res) => {
     try {
-        // .limit(100) ensures the server only sends the 100 most recent orders
-        const orders = await Order.find().sort({ date: -1 }).limit(100);
-        res.status(200).json(orders);
+        const products = await Product.find();
+        res.status(200).json(products);
     } catch (err) {
-        res.status(500).json({ message: 'Error fetching orders', error: err });
+        res.status(500).json({ message: 'Error fetching products', error: err });
     }
 });
 
@@ -459,16 +449,28 @@ app.delete('/api/products/:id', async (req, res) => {
 // --- ORDERS ROUTES ---
 
 // GET all Orders
+// app.get('/api/orders', async (req, res) => {
+//     try {
+//         // FIXED: Sort by date descending
+//         const orders = await Order.find().sort({ date: -1 }); 
+//         res.status(200).json(orders);
+//     } catch (err) {
+//         console.error("SERVER ERROR: Failed to fetch orders route:", err);
+//         res.status(500).json({ message: 'Error fetching orders', error: err.message || err });
+//     }
+// });
 app.get('/api/orders', async (req, res) => {
     try {
-        // FIXED: Sort by date descending
-        const orders = await Order.find().sort({ date: -1 }); 
+        // .limit(200) ensures the server only sends the 200 most recent items.
+        // This makes the internet transfer much faster.
+        const orders = await Order.find().sort({ date: -1 }).limit(200); 
         res.status(200).json(orders);
     } catch (err) {
-        console.error("SERVER ERROR: Failed to fetch orders route:", err);
-        res.status(500).json({ message: 'Error fetching orders', error: err.message || err });
+        res.status(500).json({ message: 'Error fetching orders', error: err.message });
     }
 });
+
+
 
 // POST (Add) a new Order (Includes Stock Update)
 app.post('/api/orders', async (req, res) => {
