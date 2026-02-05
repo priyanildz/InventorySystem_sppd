@@ -364,7 +364,7 @@ const Order = mongoose.model('Order', OrderSchema);
 // GET all Products
 app.get('/api/products', async (req, res) => {
     try {
-        const products = await Product.find();
+        const products = await Product.find().sort({ name: 1 }); // Sort alphabetically
         res.status(200).json(products);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching products', error: err });
@@ -494,12 +494,10 @@ app.delete('/api/products/:id', async (req, res) => {
 // });
 app.get('/api/orders', async (req, res) => {
     try {
-        // .limit(200) ensures the server only sends the 200 most recent items.
-        // This makes the internet transfer much faster.
-        const orders = await Order.find().sort({ date: -1 }).limit(200); 
+        const orders = await Order.find().sort({ date: -1 }); // Sort by newest date
         res.status(200).json(orders);
     } catch (err) {
-        res.status(500).json({ message: 'Error fetching orders', error: err.message });
+        res.status(500).json({ message: 'Error fetching orders', error: err });
     }
 });
 

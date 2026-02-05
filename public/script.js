@@ -366,8 +366,8 @@ function renderProducts() {
     const tbody = document.querySelector("#prodTable tbody");
     if (!tbody) return;
 
-    // BUILD THE ENTIRE TABLE AS ONE BIG STRING FIRST
-    let rowsHtml = products.map(p => `
+    // Build the string for ALL products in memory first
+    const rowsHtml = products.map(p => `
         <tr>
             <td>${p.name}</td>
             <td>${p.qty}</td>
@@ -378,7 +378,6 @@ function renderProducts() {
         </tr>
     `).join('');
 
-    // UPDATE THE SCREEN ONLY ONCE
     tbody.innerHTML = rowsHtml || "<tr><td colspan='3'>No products found.</td></tr>";
     refreshProductDropdown();
 }
@@ -388,15 +387,12 @@ function renderOrders() {
     if (!tbody) return;
 
     if (!Array.isArray(orders)) {
-        tbody.innerHTML = `<tr><td colspan="5" style="color: red;">Error loading orders.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5">Error loading orders.</td></tr>`;
         return;
     }
 
-    // ONLY DRAW THE FIRST 100 ORDERS (Pagination)
-    // This stops the browser from choking on 1,400 rows
-    const visibleOrders = orders.slice(0, 100);
-
-    let rowsHtml = visibleOrders.map(o => `
+    // REMOVED .slice() - Now it maps through the entire orders array
+    const rowsHtml = orders.map(o => `
         <tr>
             <td>${o.product}</td>
             <td>${o.type}</td>
