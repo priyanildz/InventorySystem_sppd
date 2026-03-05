@@ -724,10 +724,12 @@ const Audit = mongoose.model('Audit', AuditSchema);
 
 async function createAudit(action, details) {
     try {
-        const log = new Audit({ action, details });
-        await log.save();
+        // We still use await inside the function to ensure the log is created
+        await Audit.create({ action, details });
+        console.log(`Audit Logged: ${action}`);
     } catch (err) {
-        console.error("Audit failed:", err);
+        // If it fails, we only print a message in the logs, we don't crash the app
+        console.error("Audit logging failed:", err.message);
     }
 }
 
@@ -747,7 +749,7 @@ app.post('/api/products', async (req, res) => {
         const { name, qty } = req.body;
         const newProduct = new Product({ name, qty });
         await newProduct.save();
-        await createAudit("Add Product", `Created ${name} with initial stock: ${qty}`);
+        createAudit("Add Product", `Created ${name} with initial stock: ${qty}`);
         res.status(201).json(newProduct);
     } catch (err) {
         // Handle case where product name already exists (unique: true)
@@ -783,7 +785,7 @@ app.patch('/api/products/:id', async (req, res) => {
             return res.status(404).json({ message: 'Product not found.' });
         }
 
-        await createAudit("Update Product", `Updated ${updatedProduct.name}. New Name: ${name || 'N/A'}, New Qty: ${qty !== undefined ? qty : 'N/A'}`);
+        createAudit("Update Product", `Updated ${updatedProduct.name}`);
 
         res.status(200).json(updatedProduct);
 
@@ -908,7 +910,7 @@ app.post('/api/orders', async (req, res) => {
         // 2. Update product quantity
         const finalProduct = await Product.updateOne({ name: product }, { qty: newQuantity });
 
-        await createAudit("Add Order", `Order for ${product}: Type: ${type}, Qty: ${qty} on ${date}`);
+        createAudit("Add Order", `Order for ${product}: ${type}, Qty: ${qty}`);
 
         res.status(201).json({ order: newOrder, newProductQty: newQuantity });
 
