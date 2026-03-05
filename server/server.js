@@ -354,31 +354,12 @@ const OrderSchema = new mongoose.Schema({
 const Product = mongoose.model('Product', ProductSchema);
 const Order = mongoose.model('Order', OrderSchema);
 
-const AuditSchema = new mongoose.Schema({
-    action: { type: String, required: true }, // e.g., "Add Product", "Delete Order"
-    details: { type: String, required: true }, // e.g., "Added 50 Suji"
-    timestamp: { type: Date, default: Date.now } // When it happened
-});
-
-const Audit = mongoose.model('Audit', AuditSchema);
-
 
 // ------------------------------------------------------------------
 // 3. API ROUTES
 // ------------------------------------------------------------------
 
 // --- PRODUCTS ROUTES ---
-
-
-
-async function createAudit(action, details) {
-    try {
-        const log = new Audit({ action, details });
-        await log.save();
-    } catch (err) {
-        console.error("Audit failed:", err);
-    }
-}
 
 // GET all Products
 app.get('/api/products', async (req, res) => {
@@ -396,7 +377,6 @@ app.post('/api/products', async (req, res) => {
         const { name, qty } = req.body;
         const newProduct = new Product({ name, qty });
         await newProduct.save();
-        await createAudit("Add Product", `Created ${name} with initial stock: ${qty}`);
         res.status(201).json(newProduct);
     } catch (err) {
         // Handle case where product name already exists (unique: true)
@@ -431,8 +411,6 @@ app.patch('/api/products/:id', async (req, res) => {
         if (!updatedProduct) {
             return res.status(404).json({ message: 'Product not found.' });
         }
-
-        await createAudit("Update Product", `Updated ${updatedProduct.name}. New Name: ${name || 'N/A'}, New Qty: ${qty !== undefined ? qty : 'N/A'}`);
 
         res.status(200).json(updatedProduct);
 
@@ -495,9 +473,6 @@ app.delete('/api/products/:id', async (req, res) => {
         }
         
         await Product.findByIdAndDelete(id);
-
-        await createAudit("Delete Product", `Deleted product: ${productToDelete.name}`);
-
         res.status(200).json({ message: 'Product deleted successfully' });
     } catch (err) {
         res.status(500).json({ message: 'Error deleting product', error: err });
@@ -556,8 +531,6 @@ app.post('/api/orders', async (req, res) => {
 
         // 2. Update product quantity
         const finalProduct = await Product.updateOne({ name: product }, { qty: newQuantity });
-
-        await createAudit("Add Order", `Order for ${product}: Type: ${type}, Qty: ${qty} on ${date}`);
 
         res.status(201).json({ order: newOrder, newProductQty: newQuantity });
 
@@ -650,8 +623,6 @@ app.delete('/api/orders/:id', async (req, res) => {
 
         // 2. Revert product quantity
         await Product.updateOne({ name: product.name }, { qty: newQuantity });
-
-        await createAudit("Delete Order", `Deleted order for ${orderToDelete.product} (${orderToDelete.type}, ${orderToDelete.qty})`);
 
         res.status(200).json({ message: 'Order deleted and stock reverted successfully' });
     } catch (err) {
